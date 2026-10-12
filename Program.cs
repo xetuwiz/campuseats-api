@@ -39,17 +39,15 @@ builder.Services.AddSwaggerGen(c =>
 
 builder.Services.AddScoped<IMenuService, MenuService>();
 
-// CORS -- lets the Vercel-hosted frontend call this API from the browser.
-// Origins are config-driven (Cors:AllowedOrigins) so a new domain can be added
-// on the host via Cors__AllowedOrigins__0 without editing and redeploying code.
+// CORS -- allows the Vercel frontend to call this API from the browser.
 const string CorsPolicyName = "Frontend";
 
 var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
     ?? new[]
     {
-        "https://campuseats-dashboard-three.vercel.app", // stable Vercel domain
-        "http://localhost:5173",                        // Vite dev server
-        "http://localhost:4173"                         // vite preview (prod build)
+        "https://campuseats-dashboard-three.vercel.app",
+        "http://localhost:5173",
+        "http://localhost:4173"
     };
 
 builder.Services.AddCors(o => o.AddPolicy(CorsPolicyName, p =>
@@ -79,19 +77,13 @@ builder.Services
 
 builder.Services.AddAuthorization();
 
-// Vercel issues a unique hostname per deployment, e.g.
-// campuseats-dashboard-<hash>-xetuwizs-projects.vercel.app, so the stable
-// domain alone would break CORS on the next redeploy. Allow that shape, but
-// only hostnames under THIS Vercel team -- never every *.vercel.app, so an
-// unrelated tenant's deployment cannot call this API.
+// Vercel gives each deployment its own hostname, so allow this team's
+// deployment URLs as well as the stable domain.
 static bool IsVercelDeploymentOrigin(string origin)
 {
     if (!Uri.TryCreate(origin, UriKind.Absolute, out var uri)) return false;
     if (!string.Equals(uri.Scheme, "https", StringComparison.OrdinalIgnoreCase)) return false;
 
-    // Must end with "-xetuwizs-projects.vercel.app". Vercel joins the team with a
-    // HYPHEN ("<project>-<hash>-<team>.vercel.app"), not a dot, so matching on
-    // a dot would reject every real deployment URL.
     const string TeamSuffix = "-xetuwizs-projects.vercel.app";
 
     return uri.Host.EndsWith(TeamSuffix, StringComparison.OrdinalIgnoreCase)
@@ -122,8 +114,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-// Must sit before authentication/authorization and MapControllers so rejected
-// CORS preflights are short-circuited before any auth logic runs.
+// Must come before authentication/authorization and MapControllers.
 app.UseCors(CorsPolicyName);
 
 app.UseAuthentication();
