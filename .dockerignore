@@ -1,0 +1,25 @@
+# Keep the Docker build context small and deterministic.
+#
+# CRITICAL: obj/ contains project.assets.json with absolute WINDOWS paths.
+# Copying it into the Linux SDK image makes `dotnet publish` fail, so it must
+# be excluded and regenerated inside the container.
+bin/
+obj/
+
+# Never ship the local appsettings copies from bin/ into an image.
+appsettings.Local.json
+appsettings.*.Local.json
+
+# VCS / IDE / docs
+.git/
+.gitignore
+.vs/
+.vscode/
+.idea/
+*.user
+*.suo
+
+# Docker files themselves
+Dockerfile
+.dockerignore
+README.md

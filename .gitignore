@@ -1,0 +1,27 @@
+# Build output -- never commit compiled assemblies or the duplicated
+# appsettings copies that land in bin/ (these contain the DB password).
+[Bb]in/
+[Oo]bj/
+
+# Local secrets / machine-specific config
+appsettings.Local.json
+appsettings.*.Local.json
+*.user
+*.suo
+
+# User-specific & IDE
+.vs/
+.vscode/
+.idea/
+
+# Test results / coverage
+[Tt]est[Rr]esult*/
+coverage*.json
+coverage*.xml
+*.coverage
+
+# Logs and temp files
+*.log
+*.binlog
+[Tt]emp/
+[Tt]mp/
